@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Person;
+use Validator;
 
 class PersonController extends Controller
 {
@@ -11,9 +13,16 @@ class PersonController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        try {
+            $limit = $request->get('limit') != null ? $request->get('limit') : 10;
+            $persons = Person::paginate($limit);
+        } catch(\Exception $e) {
+            return response()->json($e->getMessage(), 500);
+        }
+
+        return response()->json($persons, 200);
     }
 
     /**
@@ -34,7 +43,30 @@ class PersonController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $rules = [
+                'name' => 'required|unique:persons|alpha|max:100',
+                'email' => 'required|email',
+                'identification' => 'unique:persons|max:6',
+                'position_id' => 'exists:positions,id'
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) 
+                return response()->json(['success' => false, 'errors' => $validator->errors()], 400);
+
+            $person = new Person();
+            $person->name = $request['name'];
+            $person->email = $request['email'];
+            $person->identification = $request['identification'];
+            $person->position_id = $request['position_id'];
+            $person->save();
+
+            return response()->json(['success' => true, 'person' => $person], 200);
+        } catch(\Exception $e) {
+            return response()->json(['success' => false, 'errors' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -45,7 +77,13 @@ class PersonController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $person = Person::findOrFail($id);
+        } catch(\Exception $e) {
+            return response()->json(['success' => false, 'errors' => $e->getMessage()], 500);
+        }
+
+        return response()->json($person, 200);
     }
 
     /**
@@ -68,7 +106,41 @@ class PersonController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $rules = [];
+            $person = new Person();
+
+            if($request->has('name')) {
+                $rules['name'] = 'required|unique:persons|alpha|max:100';
+                $person->name = $request['name'];
+            }
+
+            if($request->has('email')) {
+                $rules['email'] = 'required|email';
+                $person->email = $request['email'];
+            }
+
+            if($request->has('identification')) {
+                $rules['identification'] = 'unique:persons|max:6';
+                $person->identification = $request['identification'];
+            }
+
+            if($request->has('position_id')) {
+                $rules['position_id'] = 'exists:positions,id';
+                $person->position_id = $request['position_id'];
+            }
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) 
+                return response()->json(['success' => false, 'errors' => $validator->errors()], 400);
+
+            $person->save();
+
+            return response()->json(['success' => true, 'person' => $person], 200);
+        } catch(\Exception $e) {
+            return response()->json(['success' => false, 'errors' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -79,6 +151,12 @@ class PersonController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $person = Person::findOrFail($id);
+            $person->delete();
+            return response()->json(['success' => true, 'person' => $person], 200);
+        } catch(\Exception $e) {
+            return response()->json(['success' => false, 'errors' => $e->getMessage()], 500);
+        }
     }
 }
