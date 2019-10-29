@@ -26,6 +26,16 @@ class PersonController extends Controller
     }
 
     /**
+     * Show the table for listing all positions.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showTable()
+    {
+        return view('persons.index');
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
@@ -45,9 +55,9 @@ class PersonController extends Controller
     {
         try {
             $rules = [
-                'name' => 'required|unique:persons|alpha|max:100',
+                'name' => 'required|unique:people|alpha|max:100',
                 'email' => 'required|email',
-                'identification' => 'unique:persons|max:6',
+                'identification' => 'unique:people|max:6',
                 'position_id' => 'exists:positions,id'
             ];
 
@@ -108,24 +118,24 @@ class PersonController extends Controller
     {
         try {
             $rules = [];
-            $person = new Person();
+            $person = Person::findorFail($id);
 
-            if($request->has('name')) {
-                $rules['name'] = 'required|unique:persons|alpha|max:100';
+            if($request->has('name') && $person->name != $request['name']) {
+                $rules['name'] = 'required|unique:people|alpha|max:100';
                 $person->name = $request['name'];
             }
 
-            if($request->has('email')) {
+            if($request->has('email') && $person->email != $request['email']) {
                 $rules['email'] = 'required|email';
                 $person->email = $request['email'];
             }
 
-            if($request->has('identification')) {
-                $rules['identification'] = 'unique:persons|max:6';
+            if($request->has('identification') && $person->identification != $request['identification']) {
+                $rules['identification'] = 'unique:people|max:6';
                 $person->identification = $request['identification'];
             }
 
-            if($request->has('position_id')) {
+            if($request->has('position_id') && $person->position_id != $request['position_id']) {
                 $rules['position_id'] = 'exists:positions,id';
                 $person->position_id = $request['position_id'];
             }

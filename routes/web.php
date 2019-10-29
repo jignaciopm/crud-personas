@@ -14,3 +14,7 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/persons','PersonController@showTable')->name('persons');
+Route::get('/positions','PositionController@showTable')->name('positions');
+

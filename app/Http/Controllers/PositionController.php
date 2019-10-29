@@ -25,13 +25,23 @@ class PositionController extends Controller
     }
 
     /**
+     * Show the table for listing all positions.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showTable()
+    {
+        return view('positions.index');
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        //
+        return view('positions.create');
     }
 
     /**
@@ -100,17 +110,19 @@ class PositionController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $rules = [
-                'name' => 'required|unique:positions'
-            ];
+            $rules = [];
+            $position = Position::findOrFail($id);
+
+            if($request->has('name') && $position->name != $request['name']) {
+                $rules['name'] = 'required|unique:positions';
+                $position->name = $request['name'];
+            }
 
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) 
                 return response()->json(['success' => false, 'errors' => $validator->errors()], 400);
-
-            $position = Position::findOrFail($id);
-            $position->name = $request['name'];
+            
             $position->save();
 
             return response()->json(['success' => true, 'position' => $position], 200);
@@ -129,6 +141,7 @@ class PositionController extends Controller
     {
         try {
             $position = Position::findOrFail($id);
+            $position->persons()->delete();
             $position->delete();
             return response()->json(['success' => true, 'position' => $position], 200);
         } catch(\Exception $e) {
