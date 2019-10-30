@@ -4,7 +4,8 @@
         has-modal-card
         trap-focus
         aria-role="dialog"
-        aria-modal>
+        aria-modal
+        :can-cancel="false">
         <div class="row justify-content-center">
             <div class="col-md-12">
                 <div class="card">

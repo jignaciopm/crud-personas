@@ -6,17 +6,16 @@
                 :message="errors[attribute.name] != null ? errors[attribute.name] : ''">
                 <b-input 
                     :placeholder="attribute.placeholder" 
-                    v-model="form[attribute.name]"
+                    v-model="form[attribute.name]" 
                     v-if="!attribute.disabled"
                     :disabled="loading"
                     :loading="loading" />
             </b-field>
             <b-field :label="attribute.placeholder" v-if="attribute.isSelect">
-                <b-select 
-                    placeholder="Seleccionar" 
-                    v-model="form[attribute.name]" 
+                <b-select placeholder="Seleccionar" 
+                    v-model="form[attribute.name]"
                     :disabled="loading"
-                    :loading="attribute.loading" expanded>
+                    :loading="loading" expanded>
                     <option v-for="position in attribute.value"
                         v-bind:key="position.id" :value="position.id">{{position.name}}</option>
                 </b-select>
@@ -25,7 +24,7 @@
         </div>
 
         <b-field>
-            <b-button @click="store" :loading="loading">Crear</b-button>
+            <b-button @click="updating" :loading="loading">Actualizar</b-button>
         </b-field>
     </section>
 </template>
@@ -40,6 +39,10 @@
             url: {
                 type: String,
                 required: true
+            },
+            id: {
+                type: [String, Number],
+                required: true
             }
         },
         data() {
@@ -50,35 +53,38 @@
             }
         },
         methods: {
-            store() {
+            getData() {
                 this.loading = true
-                axios.post(this.url,this.form)
+                axios.get(`${this.url}/${this.id}`)
                     .then(res => {
                         this.loading = false
-                        this.errors = []
-                        this.form = {}
-                        this.$emit('created')
+                        this.form = res.data
                     })
                     .catch(error => {
+                        return console.log(error)
                         this.loading = false
                         this.errors = error.response.data.errors
-                    }) 
+                    })
             },
             updating() {
                 this.loading = true
-                const id = this.attributes.filter(function(attribute) {
-                    return attribute.name == 'id'
-                })[0].value
-
-                axios.put(`${this.url}/${id}`,this.form)
+                axios.put(`${this.url}/${this.id}`,this.form)
                     .then(res => {
                         this.loading = false
-                        this.$emit('created')
+                        this.errors = []
+                        this.$emit('updated')
                     })
                     .catch(error => {
                         this.loading = false
                         this.errors = error.response.data.errors
                     })
+            }
+        },
+        watch: {
+            id: function(newVal) {
+                if(newVal != '') {
+                    this.getData()
+                }
             }
         }
     }

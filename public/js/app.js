@@ -1866,6 +1866,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
     title: {
@@ -2015,25 +2016,30 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      activeTab: 0,
       data: [],
-      isPaginated: false,
+      isPaginated: true,
       isPaginationSimple: false,
       paginationPosition: 'bottom',
       defaultSortDirection: '',
       sortIcon: 'arrow-up',
       sortIconSize: 'is-small',
       currentPage: 1,
-      perPage: 5,
+      perPage: 10,
+      total: 0,
       loading: false,
-      loadingRemove: false,
-      showModalNew: false,
       showConfirmationRemove: false,
-      idSelected: null,
-      isUpdate: false,
-      attributes: [],
+      idSelected: '',
       attributesStore: [{
         name: 'name',
         placeholder: "Nombre"
@@ -2050,22 +2056,6 @@ __webpack_require__.r(__webpack_exports__);
         value: [],
         loading: true
       }],
-      attributesUpdate: [{
-        name: 'id',
-        placeholder: "ID",
-        value: '',
-        disabled: true
-      }, {
-        name: 'name',
-        placeholder: "Nombre",
-        value: ''
-      }, {
-        name: 'email',
-        placeholder: "Correo"
-      }, {
-        name: 'identification',
-        placeholder: "Cedula"
-      }],
       positions: []
     };
   },
@@ -2074,8 +2064,6 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       axios.get("api/positions").then(function (res) {
-        console.log(res);
-
         _this.attributesStore.forEach(function (attribute) {
           if (attribute.name == 'position_id') {
             attribute.loading = false;
@@ -2092,9 +2080,11 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
 
       this.loading = true;
-      axios.get("api/persons?limit=".concat(this.perPage)).then(function (res) {
+      axios.get("api/persons?limit=".concat(this.perPage, "&page=").concat(this.currentPage)).then(function (res) {
         _this2.loading = false;
         _this2.data = res.data.data;
+        _this2.total = res.data.total;
+        _this2.currentPage = res.data.current_page;
       })["catch"](function () {
         _this2.loading = false;
         alert('Error');
@@ -2111,6 +2101,13 @@ __webpack_require__.r(__webpack_exports__);
       axios["delete"]("api/persons/".concat(id)).then(function (res) {
         _this3.loading = false;
 
+        _this3.$buefy.toast.open({
+          duration: 5000,
+          position: 'is-bottom',
+          message: 'Se ha eliminado el usuario correctamente!',
+          type: 'is-success'
+        });
+
         _this3.getData();
       })["catch"](function () {
         _this3.loading = false;
@@ -2121,33 +2118,35 @@ __webpack_require__.r(__webpack_exports__);
       this.showConfirmationRemove = false;
       if (confirmed) this.remove(this.idSelected);
     },
-    refresh: function refresh() {
-      this.showModalNew = false;
+    refresh: function refresh(message) {
+      this.activeTab = 0;
+      this.$buefy.toast.open({
+        duration: 5000,
+        position: 'is-bottom',
+        message: message,
+        type: 'is-success'
+      });
       this.getData();
     },
     newPosition: function newPosition() {
-      this.showModalNew = true;
-      this.isUpdate = false;
-      this.attributes = this.attributesStore.slice(0);
+      this.activeTab = 1;
     },
     editPosition: function editPosition(position) {
-      this.showModalNew = true;
-      this.isUpdate = true;
-      this.attributes = this.attributesUpdate.slice(0);
-      this.attributes.forEach(function (attribute) {
-        attribute.value = position[attribute.name];
-      });
-    },
-    myPosition: function myPosition(id) {
-      var position = this.positions.filter(function (position) {
-        return position.id = id;
-      });
-      return position[0].name;
+      this.idSelected = position.id;
+      this.activeTab = 2;
     }
   },
   mounted: function mounted() {
     this.getData();
     this.getPositions();
+  },
+  watch: {
+    currentPage: function currentPage() {
+      this.getData();
+    },
+    perPage: function perPage() {
+      this.getData();
+    }
   }
 });
 
@@ -2257,47 +2256,20 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      activeTab: 0,
       data: [],
-      isPaginated: false,
-      isPaginationSimple: false,
-      paginationPosition: 'bottom',
       defaultSortDirection: '',
       sortIcon: 'arrow-up',
       sortIconSize: 'is-small',
-      currentPage: 1,
-      perPage: 5,
       loading: false,
-      loadingRemove: false,
-      showModalNew: false,
       showConfirmationRemove: false,
-      idSelected: null,
-      isUpdate: false,
-      attributes: [],
+      idSelected: '',
       attributesStore: [{
         name: 'name',
         placeholder: "Nombre"
-      }],
-      attributesUpdate: [{
-        name: 'id',
-        placeholder: "ID",
-        value: '',
-        disabled: true
-      }, {
-        name: 'name',
-        placeholder: "Nombre",
-        value: ''
       }]
     };
   },
@@ -2325,6 +2297,13 @@ __webpack_require__.r(__webpack_exports__);
       axios["delete"]("api/positions/".concat(id)).then(function (res) {
         _this2.loading = false;
 
+        _this2.$buefy.toast.open({
+          duration: 5000,
+          position: 'is-bottom',
+          message: 'Se ha eliminado el usuario correctamente!',
+          type: 'is-success'
+        });
+
         _this2.getData();
       })["catch"](function () {
         _this2.loading = false;
@@ -2335,22 +2314,22 @@ __webpack_require__.r(__webpack_exports__);
       this.showConfirmationRemove = false;
       if (confirmed) this.remove(this.idSelected);
     },
-    refresh: function refresh() {
-      this.showModalNew = false;
+    refresh: function refresh(message) {
+      this.activeTab = 0;
+      this.$buefy.toast.open({
+        duration: 5000,
+        position: 'is-bottom',
+        message: message,
+        type: 'is-success'
+      });
       this.getData();
     },
     newPosition: function newPosition() {
-      this.showModalNew = true;
-      this.isUpdate = false;
-      this.attributes = this.attributesStore.slice(0);
+      this.activeTab = 1;
     },
     editPosition: function editPosition(position) {
-      this.showModalNew = true;
-      this.isUpdate = true;
-      this.attributes = this.attributesUpdate.slice(0);
-      this.attributes.forEach(function (attribute) {
-        attribute.value = position[attribute.name];
-      });
+      this.idSelected = position.id;
+      this.activeTab = 2;
     }
   },
   mounted: function mounted() {
@@ -2393,6 +2372,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
     attributes: {
@@ -2402,10 +2389,6 @@ __webpack_require__.r(__webpack_exports__);
     url: {
       type: String,
       required: true
-    },
-    update: {
-      type: Boolean,
-      "default": false
     }
   },
   data: function data() {
@@ -2422,6 +2405,8 @@ __webpack_require__.r(__webpack_exports__);
       this.loading = true;
       axios.post(this.url, this.form).then(function (res) {
         _this.loading = false;
+        _this.errors = [];
+        _this.form = {};
 
         _this.$emit('created');
       })["catch"](function (error) {
@@ -2445,13 +2430,107 @@ __webpack_require__.r(__webpack_exports__);
         _this2.errors = error.response.data.errors;
       });
     }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/UpdateComponent.vue?vue&type=script&lang=js&":
+/*!**************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/UpdateComponent.vue?vue&type=script&lang=js& ***!
+  \**************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  props: {
+    attributes: {
+      type: Array,
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    },
+    id: {
+      type: [String, Number],
+      required: true
+    }
   },
-  created: function created() {
-    if (this.update) {
-      var form = this.form;
-      this.attributes.forEach(function (attribute) {
-        form[attribute.name] = attribute.value;
+  data: function data() {
+    return {
+      form: {},
+      errors: [],
+      loading: false
+    };
+  },
+  methods: {
+    getData: function getData() {
+      var _this = this;
+
+      this.loading = true;
+      axios.get("".concat(this.url, "/").concat(this.id)).then(function (res) {
+        _this.loading = false;
+        _this.form = res.data;
+      })["catch"](function (error) {
+        return console.log(error);
+        _this.loading = false;
+        _this.errors = error.response.data.errors;
       });
+    },
+    updating: function updating() {
+      var _this2 = this;
+
+      this.loading = true;
+      axios.put("".concat(this.url, "/").concat(this.id), this.form).then(function (res) {
+        _this2.loading = false;
+        _this2.errors = [];
+
+        _this2.$emit('updated');
+      })["catch"](function (error) {
+        _this2.loading = false;
+        _this2.errors = error.response.data.errors;
+      });
+    }
+  },
+  watch: {
+    id: function id(newVal) {
+      if (newVal != '') {
+        this.getData();
+      }
     }
   }
 });
@@ -51454,7 +51533,8 @@ var render = function() {
         "has-modal-card": "",
         "trap-focus": "",
         "aria-role": "dialog",
-        "aria-modal": ""
+        "aria-modal": "",
+        "can-cancel": false
       },
       on: {
         "update:active": function($event) {
@@ -51546,69 +51626,384 @@ var render = function() {
     "section",
     [
       _c(
-        "button",
-        {
-          staticClass: "button is-primary is-medium",
-          on: { click: _vm.newPosition }
-        },
-        [_vm._v("\n        Nueva Persona\n    ")]
+        "div",
+        { staticClass: "d-flex justify-content-between align-items-center" },
+        [
+          _c(
+            "b-taglist",
+            { staticClass: "m-0", attrs: { attached: "" } },
+            [
+              _c(
+                "b-tag",
+                { attrs: { type: "is-dark", size: "is-large" } },
+                [
+                  _c("b-icon", {
+                    attrs: { icon: "view-dashboard", size: "is-medium" }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c("b-tag", { attrs: { type: "is-info", size: "is-large" } }, [
+                _vm._v("LOGO")
+              ])
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass: "button is-primary is-medium",
+              on: { click: _vm.newPosition }
+            },
+            [_vm._v("\n            Nueva Persona\n        ")]
+          )
+        ],
+        1
       ),
       _vm._v(" "),
       _c(
-        "b-modal",
+        "b-tabs",
         {
-          attrs: {
-            active: _vm.showModalNew,
-            "has-modal-card": "",
-            "trap-focus": "",
-            "aria-role": "dialog",
-            "aria-modal": ""
-          },
-          on: {
-            "update:active": function($event) {
-              _vm.showModalNew = $event
-            }
+          model: {
+            value: _vm.activeTab,
+            callback: function($$v) {
+              _vm.activeTab = $$v
+            },
+            expression: "activeTab"
           }
         },
         [
-          _c("div", { staticClass: "row justify-content-center" }, [
-            _c("div", { staticClass: "col-md-12" }, [
-              _c("div", { staticClass: "card" }, [
-                _c(
-                  "div",
-                  {
-                    staticClass:
-                      "card-header d-flex justify-content-between align-items-center"
+          _c(
+            "b-tab-item",
+            { attrs: { label: "Listado" } },
+            [
+              _c(
+                "b-field",
+                { attrs: { grouped: "", "group-multiline": "" } },
+                [
+                  _vm.isPaginated
+                    ? _c(
+                        "b-select",
+                        {
+                          model: {
+                            value: _vm.perPage,
+                            callback: function($$v) {
+                              _vm.perPage = $$v
+                            },
+                            expression: "perPage"
+                          }
+                        },
+                        [
+                          _c("option", { attrs: { value: "5" } }, [
+                            _vm._v("5 por pagina")
+                          ]),
+                          _vm._v(" "),
+                          _c("option", { attrs: { value: "10" } }, [
+                            _vm._v("10 por pagina")
+                          ]),
+                          _vm._v(" "),
+                          _c("option", { attrs: { value: "15" } }, [
+                            _vm._v("15 por pagina")
+                          ]),
+                          _vm._v(" "),
+                          _c("option", { attrs: { value: "20" } }, [
+                            _vm._v("20 por pagina")
+                          ])
+                        ]
+                      )
+                    : _vm._e()
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "b-table",
+                {
+                  attrs: {
+                    data: _vm.data,
+                    paginated: _vm.isPaginated,
+                    "per-page": _vm.perPage,
+                    "current-page": _vm.currentPage,
+                    "pagination-simple": _vm.isPaginationSimple,
+                    "pagination-position": _vm.paginationPosition,
+                    "default-sort-direction": _vm.defaultSortDirection,
+                    "sort-icon": _vm.sortIcon,
+                    "sort-icon-size": _vm.sortIconSize,
+                    loading: _vm.loading,
+                    "backend-pagination": true,
+                    total: _vm.total,
+                    "default-sort": "name",
+                    "aria-next-label": "Next page",
+                    "aria-previous-label": "Previous page",
+                    "aria-page-label": "Page",
+                    "aria-current-label": "Current page"
                   },
-                  [
-                    _c("div", [
-                      _vm._v(
-                        _vm._s(_vm.isUpdate ? "Actualizar" : "Nueva") +
-                          " persona"
+                  on: {
+                    "update:currentPage": function($event) {
+                      _vm.currentPage = $event
+                    },
+                    "update:current-page": function($event) {
+                      _vm.currentPage = $event
+                    }
+                  },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "default",
+                      fn: function(props) {
+                        return [
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "id",
+                                label: "ID",
+                                width: "40",
+                                sortable: "",
+                                numeric: ""
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(props.row.id) +
+                                  "\n                    "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "name",
+                                label: "Nombre",
+                                sortable: ""
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(props.row.name) +
+                                  "\n                    "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "email",
+                                label: "Correo",
+                                sortable: ""
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(props.row.email) +
+                                  "\n                    "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "identification",
+                                label: "Cedula",
+                                sortable: ""
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(
+                                    props.row.identification != null
+                                      ? props.row.identification
+                                      : "N/A"
+                                  ) +
+                                  "\n                    "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "position",
+                                label: "Cargo",
+                                sortable: ""
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(
+                                    props.row.position != null
+                                      ? props.row.position.name
+                                      : "N/A"
+                                  ) +
+                                  "\n                    "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "created_at",
+                                label: "Creacion",
+                                sortable: "",
+                                centered: ""
+                              }
+                            },
+                            [
+                              _c("span", { staticClass: "tag is-success" }, [
+                                _vm._v(
+                                  "\n                            " +
+                                    _vm._s(
+                                      new Date(
+                                        props.row.created_at
+                                      ).toLocaleDateString()
+                                    ) +
+                                    "\n                        "
+                                )
+                              ])
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "actions",
+                                label: "Acciones",
+                                width: "80",
+                                sortable: "",
+                                centered: ""
+                              }
+                            },
+                            [
+                              _c(
+                                "span",
+                                [
+                                  _c("b-button", {
+                                    attrs: {
+                                      type: "is-success",
+                                      "icon-right": "pencil",
+                                      size: "is-small"
+                                    },
+                                    on: {
+                                      click: function($event) {
+                                        return _vm.editPosition(props.row)
+                                      }
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _c("b-button", {
+                                    attrs: {
+                                      type: "is-danger",
+                                      "icon-right": "delete",
+                                      size: "is-small"
+                                    },
+                                    on: {
+                                      click: function($event) {
+                                        return _vm.idSelectionRemove(
+                                          props.row.id
+                                        )
+                                      }
+                                    }
+                                  })
+                                ],
+                                1
+                              )
+                            ]
+                          )
+                        ]
+                      }
+                    }
+                  ])
+                },
+                [
+                  _vm._v(" "),
+                  _c("template", { slot: "empty" }, [
+                    _c("section", { staticClass: "section" }, [
+                      _c(
+                        "div",
+                        {
+                          staticClass: "content has-text-grey has-text-centered"
+                        },
+                        [
+                          _c(
+                            "p",
+                            [
+                              _c("b-icon", {
+                                attrs: {
+                                  icon: "emoticon-sad",
+                                  size: "is-large"
+                                }
+                              })
+                            ],
+                            1
+                          ),
+                          _vm._v(" "),
+                          _c("p", [_vm._v("No se encontraron registros.")])
+                        ]
                       )
                     ])
-                  ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  { staticClass: "card-body" },
-                  [
-                    _c("store-component", {
-                      attrs: {
-                        update: _vm.isUpdate,
-                        attributes: _vm.attributes,
-                        url: "api/persons"
-                      },
-                      on: { created: _vm.refresh }
-                    })
-                  ],
-                  1
-                )
-              ])
-            ])
-          ])
-        ]
+                  ])
+                ],
+                2
+              )
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "b-tab-item",
+            { attrs: { label: "Nuevo", disabled: "" } },
+            [
+              _c("store-component", {
+                attrs: { attributes: _vm.attributesStore, url: "api/persons" },
+                on: {
+                  created: function($event) {
+                    return _vm.refresh("Se ha creado la persona correctamente!")
+                  }
+                }
+              })
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "b-tab-item",
+            { attrs: { label: "Editar", disabled: "" } },
+            [
+              _c("update-component", {
+                attrs: {
+                  id: _vm.idSelected,
+                  attributes: _vm.attributesStore,
+                  url: "api/persons"
+                },
+                on: {
+                  updated: function($event) {
+                    return _vm.refresh(
+                      "Se ha actualizado la persona correctamente!"
+                    )
+                  }
+                }
+              })
+            ],
+            1
+          )
+        ],
+        1
       ),
       _vm._v(" "),
       _c("confirmation-component", {
@@ -51618,263 +52013,7 @@ var render = function() {
           show: _vm.showConfirmationRemove
         },
         on: { confirmed: _vm.confirmedRemove }
-      }),
-      _vm._v(" "),
-      _c(
-        "b-field",
-        { attrs: { grouped: "", "group-multiline": "" } },
-        [
-          _vm.isPaginated
-            ? _c(
-                "b-select",
-                {
-                  model: {
-                    value: _vm.perPage,
-                    callback: function($$v) {
-                      _vm.perPage = $$v
-                    },
-                    expression: "perPage"
-                  }
-                },
-                [
-                  _c("option", { attrs: { value: "5" } }, [
-                    _vm._v("5 por pagina")
-                  ]),
-                  _vm._v(" "),
-                  _c("option", { attrs: { value: "10" } }, [
-                    _vm._v("10 por pagina")
-                  ]),
-                  _vm._v(" "),
-                  _c("option", { attrs: { value: "15" } }, [
-                    _vm._v("15 por pagina")
-                  ]),
-                  _vm._v(" "),
-                  _c("option", { attrs: { value: "20" } }, [
-                    _vm._v("20 por pagina")
-                  ])
-                ]
-              )
-            : _vm._e()
-        ],
-        1
-      ),
-      _vm._v(" "),
-      _c(
-        "b-table",
-        {
-          attrs: {
-            data: _vm.data,
-            paginated: _vm.isPaginated,
-            "per-page": _vm.perPage,
-            "current-page": _vm.currentPage,
-            "pagination-simple": _vm.isPaginationSimple,
-            "pagination-position": _vm.paginationPosition,
-            "default-sort-direction": _vm.defaultSortDirection,
-            "sort-icon": _vm.sortIcon,
-            "sort-icon-size": _vm.sortIconSize,
-            loading: _vm.loading,
-            "default-sort": "name",
-            "aria-next-label": "Next page",
-            "aria-previous-label": "Previous page",
-            "aria-page-label": "Page",
-            "aria-current-label": "Current page"
-          },
-          on: {
-            "update:currentPage": function($event) {
-              _vm.currentPage = $event
-            },
-            "update:current-page": function($event) {
-              _vm.currentPage = $event
-            }
-          },
-          scopedSlots: _vm._u([
-            {
-              key: "default",
-              fn: function(props) {
-                return [
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "id",
-                        label: "ID",
-                        width: "40",
-                        sortable: "",
-                        numeric: ""
-                      }
-                    },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(props.row.id) +
-                          "\n            "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    { attrs: { field: "name", label: "Nombre", sortable: "" } },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(props.row.name) +
-                          "\n            "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: { field: "email", label: "Correo", sortable: "" }
-                    },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(props.row.email) +
-                          "\n            "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "identification",
-                        label: "Cedula",
-                        sortable: ""
-                      }
-                    },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(props.row.identification) +
-                          "\n            "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "position_id",
-                        label: "Cargo",
-                        sortable: ""
-                      }
-                    },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(_vm.myPosition(props.row.position_id)) +
-                          "\n            "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "created_at",
-                        label: "Creacion",
-                        sortable: "",
-                        centered: ""
-                      }
-                    },
-                    [
-                      _c("span", { staticClass: "tag is-success" }, [
-                        _vm._v(
-                          "\n                    " +
-                            _vm._s(
-                              new Date(
-                                props.row.created_at
-                              ).toLocaleDateString()
-                            ) +
-                            "\n                "
-                        )
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "actions",
-                        label: "Acciones",
-                        width: "80",
-                        sortable: "",
-                        centered: ""
-                      }
-                    },
-                    [
-                      _c(
-                        "span",
-                        [
-                          _c("b-button", {
-                            attrs: {
-                              type: "is-success",
-                              "icon-right": "pencil",
-                              size: "is-small"
-                            },
-                            on: {
-                              click: function($event) {
-                                return _vm.editPosition(props.row)
-                              }
-                            }
-                          }),
-                          _vm._v(" "),
-                          _c("b-button", {
-                            attrs: {
-                              type: "is-danger",
-                              "icon-right": "delete",
-                              size: "is-small"
-                            },
-                            on: {
-                              click: function($event) {
-                                return _vm.idSelectionRemove(props.row.id)
-                              }
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ]
-                  )
-                ]
-              }
-            }
-          ])
-        },
-        [
-          _vm._v(" "),
-          _c("template", { slot: "empty" }, [
-            _c("section", { staticClass: "section" }, [
-              _c(
-                "div",
-                { staticClass: "content has-text-grey has-text-centered" },
-                [
-                  _c(
-                    "p",
-                    [
-                      _c("b-icon", {
-                        attrs: { icon: "emoticon-sad", size: "is-large" }
-                      })
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c("p", [_vm._v("No se encontraron registros.")])
-                ]
-              )
-            ])
-          ])
-        ],
-        2
-      )
+      })
     ],
     1
   )
@@ -51905,69 +52044,273 @@ var render = function() {
     "section",
     [
       _c(
-        "button",
-        {
-          staticClass: "button is-primary is-medium",
-          on: { click: _vm.newPosition }
-        },
-        [_vm._v("\n        Nueva Posicion\n    ")]
+        "div",
+        { staticClass: "d-flex justify-content-between align-items-center" },
+        [
+          _c(
+            "b-taglist",
+            { staticClass: "m-0", attrs: { attached: "" } },
+            [
+              _c(
+                "b-tag",
+                { attrs: { type: "is-dark", size: "is-large" } },
+                [
+                  _c("b-icon", {
+                    attrs: { icon: "view-dashboard", size: "is-medium" }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c("b-tag", { attrs: { type: "is-info", size: "is-large" } }, [
+                _vm._v("LOGO")
+              ])
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass: "button is-primary is-medium",
+              on: { click: _vm.newPosition }
+            },
+            [_vm._v("\n            Nueva Posicion\n        ")]
+          )
+        ],
+        1
       ),
       _vm._v(" "),
       _c(
-        "b-modal",
+        "b-tabs",
         {
-          attrs: {
-            active: _vm.showModalNew,
-            "has-modal-card": "",
-            "trap-focus": "",
-            "aria-role": "dialog",
-            "aria-modal": ""
-          },
-          on: {
-            "update:active": function($event) {
-              _vm.showModalNew = $event
-            }
+          model: {
+            value: _vm.activeTab,
+            callback: function($$v) {
+              _vm.activeTab = $$v
+            },
+            expression: "activeTab"
           }
         },
         [
-          _c("div", { staticClass: "row justify-content-center" }, [
-            _c("div", { staticClass: "col-md-12" }, [
-              _c("div", { staticClass: "card" }, [
-                _c(
-                  "div",
-                  {
-                    staticClass:
-                      "card-header d-flex justify-content-between align-items-center"
+          _c(
+            "b-tab-item",
+            { attrs: { label: "Listado" } },
+            [
+              _c(
+                "b-table",
+                {
+                  attrs: {
+                    data: _vm.data,
+                    "default-sort-direction": _vm.defaultSortDirection,
+                    "sort-icon": _vm.sortIcon,
+                    "sort-icon-size": _vm.sortIconSize,
+                    loading: _vm.loading,
+                    "default-sort": "user.first_name",
+                    "aria-next-label": "Next page",
+                    "aria-previous-label": "Previous page",
+                    "aria-page-label": "Page",
+                    "aria-current-label": "Current page"
                   },
-                  [
-                    _c("div", [
-                      _vm._v(
-                        _vm._s(_vm.isUpdate ? "Actualizar" : "Nueva") +
-                          " posicion"
+                  scopedSlots: _vm._u([
+                    {
+                      key: "default",
+                      fn: function(props) {
+                        return [
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "id",
+                                label: "ID",
+                                width: "40",
+                                sortable: "",
+                                numeric: ""
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(props.row.id) +
+                                  "\n                    "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "name",
+                                label: "Nombre",
+                                sortable: ""
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(props.row.name) +
+                                  "\n                    "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "created_at",
+                                label: "Creacion",
+                                sortable: "",
+                                centered: ""
+                              }
+                            },
+                            [
+                              _c("span", { staticClass: "tag is-success" }, [
+                                _vm._v(
+                                  "\n                            " +
+                                    _vm._s(
+                                      new Date(
+                                        props.row.created_at
+                                      ).toLocaleDateString()
+                                    ) +
+                                    "\n                        "
+                                )
+                              ])
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "b-table-column",
+                            {
+                              attrs: {
+                                field: "actions",
+                                label: "Acciones",
+                                width: "80",
+                                sortable: "",
+                                centered: ""
+                              }
+                            },
+                            [
+                              _c(
+                                "span",
+                                [
+                                  _c("b-button", {
+                                    attrs: {
+                                      type: "is-success",
+                                      "icon-right": "pencil",
+                                      size: "is-small"
+                                    },
+                                    on: {
+                                      click: function($event) {
+                                        return _vm.editPosition(props.row)
+                                      }
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _c("b-button", {
+                                    attrs: {
+                                      type: "is-danger",
+                                      "icon-right": "delete",
+                                      size: "is-small"
+                                    },
+                                    on: {
+                                      click: function($event) {
+                                        return _vm.idSelectionRemove(
+                                          props.row.id
+                                        )
+                                      }
+                                    }
+                                  })
+                                ],
+                                1
+                              )
+                            ]
+                          )
+                        ]
+                      }
+                    }
+                  ])
+                },
+                [
+                  _vm._v(" "),
+                  _c("template", { slot: "empty" }, [
+                    _c("section", { staticClass: "section" }, [
+                      _c(
+                        "div",
+                        {
+                          staticClass: "content has-text-grey has-text-centered"
+                        },
+                        [
+                          _c(
+                            "p",
+                            [
+                              _c("b-icon", {
+                                attrs: {
+                                  icon: "emoticon-sad",
+                                  size: "is-large"
+                                }
+                              })
+                            ],
+                            1
+                          ),
+                          _vm._v(" "),
+                          _c("p", [_vm._v("No se encontraron registros.")])
+                        ]
                       )
                     ])
-                  ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  { staticClass: "card-body" },
-                  [
-                    _c("store-component", {
-                      attrs: {
-                        update: _vm.isUpdate,
-                        attributes: _vm.attributes,
-                        url: "api/positions"
-                      },
-                      on: { created: _vm.refresh }
-                    })
-                  ],
-                  1
-                )
-              ])
-            ])
-          ])
-        ]
+                  ])
+                ],
+                2
+              )
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "b-tab-item",
+            { attrs: { label: "Nuevo", disabled: "" } },
+            [
+              _c("store-component", {
+                attrs: {
+                  attributes: _vm.attributesStore,
+                  url: "api/positions"
+                },
+                on: {
+                  created: function($event) {
+                    return _vm.refresh(
+                      "Se ha creado la posicion correctamente!"
+                    )
+                  }
+                }
+              })
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "b-tab-item",
+            { attrs: { label: "Editar", disabled: "" } },
+            [
+              _c("update-component", {
+                attrs: {
+                  id: _vm.idSelected,
+                  attributes: _vm.attributesStore,
+                  url: "api/positions"
+                },
+                on: {
+                  updated: function($event) {
+                    return _vm.refresh(
+                      "Se ha actualizado la posicion correctamente!"
+                    )
+                  }
+                }
+              })
+            ],
+            1
+          )
+        ],
+        1
       ),
       _vm._v(" "),
       _c("confirmation-component", {
@@ -51977,213 +52320,7 @@ var render = function() {
           show: _vm.showConfirmationRemove
         },
         on: { confirmed: _vm.confirmedRemove }
-      }),
-      _vm._v(" "),
-      _c(
-        "b-field",
-        { attrs: { grouped: "", "group-multiline": "" } },
-        [
-          _vm.isPaginated
-            ? _c(
-                "b-select",
-                {
-                  model: {
-                    value: _vm.perPage,
-                    callback: function($$v) {
-                      _vm.perPage = $$v
-                    },
-                    expression: "perPage"
-                  }
-                },
-                [
-                  _c("option", { attrs: { value: "5" } }, [
-                    _vm._v("5 por pagina")
-                  ]),
-                  _vm._v(" "),
-                  _c("option", { attrs: { value: "10" } }, [
-                    _vm._v("10 por pagina")
-                  ]),
-                  _vm._v(" "),
-                  _c("option", { attrs: { value: "15" } }, [
-                    _vm._v("15 por pagina")
-                  ]),
-                  _vm._v(" "),
-                  _c("option", { attrs: { value: "20" } }, [
-                    _vm._v("20 por pagina")
-                  ])
-                ]
-              )
-            : _vm._e()
-        ],
-        1
-      ),
-      _vm._v(" "),
-      _c(
-        "b-table",
-        {
-          attrs: {
-            data: _vm.data,
-            paginated: _vm.isPaginated,
-            "per-page": _vm.perPage,
-            "current-page": _vm.currentPage,
-            "pagination-simple": _vm.isPaginationSimple,
-            "pagination-position": _vm.paginationPosition,
-            "default-sort-direction": _vm.defaultSortDirection,
-            "sort-icon": _vm.sortIcon,
-            "sort-icon-size": _vm.sortIconSize,
-            loading: _vm.loading,
-            "default-sort": "user.first_name",
-            "aria-next-label": "Next page",
-            "aria-previous-label": "Previous page",
-            "aria-page-label": "Page",
-            "aria-current-label": "Current page"
-          },
-          on: {
-            "update:currentPage": function($event) {
-              _vm.currentPage = $event
-            },
-            "update:current-page": function($event) {
-              _vm.currentPage = $event
-            }
-          },
-          scopedSlots: _vm._u([
-            {
-              key: "default",
-              fn: function(props) {
-                return [
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "id",
-                        label: "ID",
-                        width: "40",
-                        sortable: "",
-                        numeric: ""
-                      }
-                    },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(props.row.id) +
-                          "\n            "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    { attrs: { field: "name", label: "Nombre", sortable: "" } },
-                    [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(props.row.name) +
-                          "\n            "
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "created_at",
-                        label: "Creacion",
-                        sortable: "",
-                        centered: ""
-                      }
-                    },
-                    [
-                      _c("span", { staticClass: "tag is-success" }, [
-                        _vm._v(
-                          "\n                    " +
-                            _vm._s(
-                              new Date(
-                                props.row.created_at
-                              ).toLocaleDateString()
-                            ) +
-                            "\n                "
-                        )
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-table-column",
-                    {
-                      attrs: {
-                        field: "actions",
-                        label: "Acciones",
-                        width: "80",
-                        sortable: "",
-                        centered: ""
-                      }
-                    },
-                    [
-                      _c(
-                        "span",
-                        [
-                          _c("b-button", {
-                            attrs: {
-                              type: "is-success",
-                              "icon-right": "pencil",
-                              size: "is-small"
-                            },
-                            on: {
-                              click: function($event) {
-                                return _vm.editPosition(props.row)
-                              }
-                            }
-                          }),
-                          _vm._v(" "),
-                          _c("b-button", {
-                            attrs: {
-                              type: "is-danger",
-                              "icon-right": "delete",
-                              size: "is-small"
-                            },
-                            on: {
-                              click: function($event) {
-                                return _vm.idSelectionRemove(props.row.id)
-                              }
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ]
-                  )
-                ]
-              }
-            }
-          ])
-        },
-        [
-          _vm._v(" "),
-          _c("template", { slot: "empty" }, [
-            _c("section", { staticClass: "section" }, [
-              _c(
-                "div",
-                { staticClass: "content has-text-grey has-text-centered" },
-                [
-                  _c(
-                    "p",
-                    [
-                      _c("b-icon", {
-                        attrs: { icon: "emoticon-sad", size: "is-large" }
-                      })
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c("p", [_vm._v("No se encontraron registros.")])
-                ]
-              )
-            ])
-          ])
-        ],
-        2
-      )
+      })
     ],
     1
   )
@@ -52235,7 +52372,11 @@ var render = function() {
                   [
                     !attribute.disabled
                       ? _c("b-input", {
-                          attrs: { placeholder: attribute.placeholder },
+                          attrs: {
+                            placeholder: attribute.placeholder,
+                            disabled: _vm.loading,
+                            loading: _vm.loading
+                          },
                           model: {
                             value: _vm.form[attribute.name],
                             callback: function($$v) {
@@ -52260,6 +52401,7 @@ var render = function() {
                       {
                         attrs: {
                           placeholder: "Seleccionar",
+                          disabled: _vm.loading,
                           loading: attribute.loading,
                           expanded: ""
                         },
@@ -52297,20 +52439,137 @@ var render = function() {
       _c(
         "b-field",
         [
-          !_vm.update
-            ? _c(
-                "b-button",
-                { attrs: { loading: _vm.loading }, on: { click: _vm.store } },
-                [_vm._v("Crear")]
-              )
-            : _c(
-                "b-button",
-                {
-                  attrs: { loading: _vm.loading },
-                  on: { click: _vm.updating }
-                },
-                [_vm._v("Actualizar")]
-              )
+          _c(
+            "b-button",
+            { attrs: { loading: _vm.loading }, on: { click: _vm.store } },
+            [_vm._v("Crear")]
+          )
+        ],
+        1
+      )
+    ],
+    2
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/UpdateComponent.vue?vue&type=template&id=1207a899&":
+/*!******************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/UpdateComponent.vue?vue&type=template&id=1207a899& ***!
+  \******************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "section",
+    [
+      _vm._l(_vm.attributes, function(attribute) {
+        return _c(
+          "div",
+          { key: attribute.name },
+          [
+            !attribute.disabled && !attribute.isSelect
+              ? _c(
+                  "b-field",
+                  {
+                    attrs: {
+                      label: attribute.placeholder,
+                      type:
+                        _vm.errors[attribute.name] != null ? "is-danger" : "",
+                      message:
+                        _vm.errors[attribute.name] != null
+                          ? _vm.errors[attribute.name]
+                          : ""
+                    }
+                  },
+                  [
+                    !attribute.disabled
+                      ? _c("b-input", {
+                          attrs: {
+                            placeholder: attribute.placeholder,
+                            disabled: _vm.loading,
+                            loading: _vm.loading
+                          },
+                          model: {
+                            value: _vm.form[attribute.name],
+                            callback: function($$v) {
+                              _vm.$set(_vm.form, attribute.name, $$v)
+                            },
+                            expression: "form[attribute.name]"
+                          }
+                        })
+                      : _vm._e()
+                  ],
+                  1
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            attribute.isSelect
+              ? _c(
+                  "b-field",
+                  { attrs: { label: attribute.placeholder } },
+                  [
+                    _c(
+                      "b-select",
+                      {
+                        attrs: {
+                          placeholder: "Seleccionar",
+                          disabled: _vm.loading,
+                          loading: _vm.loading,
+                          expanded: ""
+                        },
+                        model: {
+                          value: _vm.form[attribute.name],
+                          callback: function($$v) {
+                            _vm.$set(_vm.form, attribute.name, $$v)
+                          },
+                          expression: "form[attribute.name]"
+                        }
+                      },
+                      _vm._l(attribute.value, function(position) {
+                        return _c(
+                          "option",
+                          {
+                            key: position.id,
+                            domProps: { value: position.id }
+                          },
+                          [_vm._v(_vm._s(position.name))]
+                        )
+                      }),
+                      0
+                    )
+                  ],
+                  1
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _c("b-field")
+          ],
+          1
+        )
+      }),
+      _vm._v(" "),
+      _c(
+        "b-field",
+        [
+          _c(
+            "b-button",
+            { attrs: { loading: _vm.loading }, on: { click: _vm.updating } },
+            [_vm._v("Actualizar")]
+          )
         ],
         1
       )
@@ -64501,6 +64760,7 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('positions-component', __we
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('persons-component', __webpack_require__(/*! ./components/PersonComponent.vue */ "./resources/js/components/PersonComponent.vue")["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('confirmation-component', __webpack_require__(/*! ./components/ConfirmationComponent.vue */ "./resources/js/components/ConfirmationComponent.vue")["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('store-component', __webpack_require__(/*! ./components/StoreComponent.vue */ "./resources/js/components/StoreComponent.vue")["default"]);
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('update-component', __webpack_require__(/*! ./components/UpdateComponent.vue */ "./resources/js/components/UpdateComponent.vue")["default"]);
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -64829,6 +65089,75 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_StoreComponent_vue_vue_type_template_id_f627a372___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_StoreComponent_vue_vue_type_template_id_f627a372___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/UpdateComponent.vue":
+/*!*****************************************************!*\
+  !*** ./resources/js/components/UpdateComponent.vue ***!
+  \*****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _UpdateComponent_vue_vue_type_template_id_1207a899___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./UpdateComponent.vue?vue&type=template&id=1207a899& */ "./resources/js/components/UpdateComponent.vue?vue&type=template&id=1207a899&");
+/* harmony import */ var _UpdateComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./UpdateComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/UpdateComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _UpdateComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _UpdateComponent_vue_vue_type_template_id_1207a899___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _UpdateComponent_vue_vue_type_template_id_1207a899___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/UpdateComponent.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/UpdateComponent.vue?vue&type=script&lang=js&":
+/*!******************************************************************************!*\
+  !*** ./resources/js/components/UpdateComponent.vue?vue&type=script&lang=js& ***!
+  \******************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_UpdateComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./UpdateComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/UpdateComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_UpdateComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/UpdateComponent.vue?vue&type=template&id=1207a899&":
+/*!************************************************************************************!*\
+  !*** ./resources/js/components/UpdateComponent.vue?vue&type=template&id=1207a899& ***!
+  \************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_UpdateComponent_vue_vue_type_template_id_1207a899___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./UpdateComponent.vue?vue&type=template&id=1207a899& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/UpdateComponent.vue?vue&type=template&id=1207a899&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_UpdateComponent_vue_vue_type_template_id_1207a899___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_UpdateComponent_vue_vue_type_template_id_1207a899___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 

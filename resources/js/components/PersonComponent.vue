@@ -1,116 +1,123 @@
 <template>
     <section>
-        <button class="button is-primary is-medium"
-            @click="newPosition">
-            Nueva Persona
-        </button>
+        <div class="d-flex justify-content-between align-items-center">
+            <b-taglist attached class='m-0'>
+                <b-tag type="is-dark" size="is-large">  
+                    <b-icon
+                        icon="view-dashboard"
+                        size="is-medium">
+                    </b-icon>
+                </b-tag>
+                <b-tag type="is-info" size="is-large">LOGO</b-tag>
+            </b-taglist>
+            <button class="button is-primary is-medium"
+                @click="newPosition">
+                Nueva Persona
+            </button>
+        </div>
 
-        <b-modal 
-            :active.sync="showModalNew"
-            has-modal-card
-            trap-focus
-            aria-role="dialog"
-            aria-modal>
-            <div class="row justify-content-center">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div>{{isUpdate ? 'Actualizar' : 'Nueva'}} persona</div>
-                        </div>
+        <b-tabs v-model="activeTab">
+            <b-tab-item label="Listado">
+                <b-field grouped group-multiline>
+                    <b-select v-model="perPage" v-if="isPaginated">
+                        <option value="5">5 por pagina</option>
+                        <option value="10">10 por pagina</option>
+                        <option value="15">15 por pagina</option>
+                        <option value="20">20 por pagina</option>
+                    </b-select>
+                </b-field>
 
-                        <div class="card-body">
-                            <store-component 
-                                @created="refresh" 
-                                :update="isUpdate"
-                                :attributes="attributes"
-                                :url='`api/persons`'/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </b-modal>
+                <b-table
+                    :data="data"
+                    :paginated="isPaginated"
+                    :per-page="perPage"
+                    :current-page.sync="currentPage"
+                    :pagination-simple="isPaginationSimple"
+                    :pagination-position="paginationPosition"
+                    :default-sort-direction="defaultSortDirection"
+                    :sort-icon="sortIcon"
+                    :sort-icon-size="sortIconSize"
+                    :loading="loading"
+                    :backend-pagination="true"
+                    :total="total"
+                    default-sort="name"
+                    aria-next-label="Next page"
+                    aria-previous-label="Previous page"
+                    aria-page-label="Page"
+                    aria-current-label="Current page">
+
+                    <template slot-scope="props">
+                        <b-table-column field="id" label="ID" width="40" sortable numeric>
+                            {{ props.row.id }}
+                        </b-table-column>
+
+                        <b-table-column field="name" label="Nombre" sortable>
+                            {{ props.row.name }}
+                        </b-table-column>
+
+                        <b-table-column field="email" label="Correo" sortable>
+                            {{ props.row.email }}
+                        </b-table-column>
+
+                        <b-table-column field="identification" label="Cedula" sortable>
+                            {{ props.row.identification != null ? props.row.identification : 'N/A' }}
+                        </b-table-column>
+
+                        <b-table-column field="position" label="Cargo" sortable>
+                            {{ props.row.position != null ? props.row.position.name : 'N/A' }}
+                        </b-table-column>
+
+                        <b-table-column field="created_at" label="Creacion" sortable centered>
+                            <span class="tag is-success">
+                                {{ new Date(props.row.created_at).toLocaleDateString() }}
+                            </span>
+                        </b-table-column>
+
+                        <b-table-column field="actions" label="Acciones" width="80" sortable centered>
+                            <span>
+                                <b-button type="is-success" icon-right="pencil" size="is-small" @click="editPosition(props.row)"/>
+                                <b-button 
+                                    type="is-danger" icon-right="delete" size="is-small" @click="idSelectionRemove(props.row.id)"/>
+                            </span>
+                        </b-table-column>
+                    </template>
+                    <template slot="empty">
+                        <section class="section">
+                            <div class="content has-text-grey has-text-centered">
+                                <p>
+                                    <b-icon
+                                        icon="emoticon-sad"
+                                        size="is-large">
+                                    </b-icon>
+                                </p>
+                                <p>No se encontraron registros.</p>
+                            </div>
+                        </section>
+                    </template>
+                </b-table>
+            </b-tab-item>
+
+            <b-tab-item label="Nuevo" disabled>
+                <store-component 
+                    @created="refresh('Se ha creado la persona correctamente!')"
+                    :attributes="attributesStore"
+                    :url='`api/persons`'/>
+            </b-tab-item>
+
+            <b-tab-item label="Editar" disabled>
+                <update-component 
+                    @updated="refresh('Se ha actualizado la persona correctamente!')"
+                    :id="idSelected"
+                    :attributes="attributesStore"
+                    :url='`api/persons`'/>
+            </b-tab-item>
+        </b-tabs>
 
         <confirmation-component 
             title="Eliminar Persona" 
             body="Esta seguro que desea eliminar esta persona?"
             :show="showConfirmationRemove"
             @confirmed="confirmedRemove" />
-
-        <b-field grouped group-multiline>
-            <b-select v-model="perPage" v-if="isPaginated">
-                <option value="5">5 por pagina</option>
-                <option value="10">10 por pagina</option>
-                <option value="15">15 por pagina</option>
-                <option value="20">20 por pagina</option>
-            </b-select>
-        </b-field>
-
-        <b-table
-            :data="data"
-            :paginated="isPaginated"
-            :per-page="perPage"
-            :current-page.sync="currentPage"
-            :pagination-simple="isPaginationSimple"
-            :pagination-position="paginationPosition"
-            :default-sort-direction="defaultSortDirection"
-            :sort-icon="sortIcon"
-            :sort-icon-size="sortIconSize"
-            :loading="loading"
-            default-sort="name"
-            aria-next-label="Next page"
-            aria-previous-label="Previous page"
-            aria-page-label="Page"
-            aria-current-label="Current page">
-
-            <template slot-scope="props">
-                <b-table-column field="id" label="ID" width="40" sortable numeric>
-                    {{ props.row.id }}
-                </b-table-column>
-
-                <b-table-column field="name" label="Nombre" sortable>
-                    {{ props.row.name }}
-                </b-table-column>
-
-                <b-table-column field="email" label="Correo" sortable>
-                    {{ props.row.email }}
-                </b-table-column>
-
-                <b-table-column field="identification" label="Cedula" sortable>
-                    {{ props.row.identification }}
-                </b-table-column>
-
-                <b-table-column field="position_id" label="Cargo" sortable>
-                    {{ myPosition(props.row.position_id) }}
-                </b-table-column>
-
-                <b-table-column field="created_at" label="Creacion" sortable centered>
-                    <span class="tag is-success">
-                        {{ new Date(props.row.created_at).toLocaleDateString() }}
-                    </span>
-                </b-table-column>
-
-                <b-table-column field="actions" label="Acciones" width="80" sortable centered>
-                    <span>
-                        <b-button type="is-success" icon-right="pencil" size="is-small" @click="editPosition(props.row)"/>
-                        <b-button 
-                            type="is-danger" icon-right="delete" size="is-small" @click="idSelectionRemove(props.row.id)"/>
-                    </span>
-                </b-table-column>
-            </template>
-            <template slot="empty">
-                <section class="section">
-                    <div class="content has-text-grey has-text-centered">
-                        <p>
-                            <b-icon
-                                icon="emoticon-sad"
-                                size="is-large">
-                            </b-icon>
-                        </p>
-                        <p>No se encontraron registros.</p>
-                    </div>
-                </section>
-            </template>
-        </b-table>
     </section>
 </template>
 
@@ -118,22 +125,20 @@
     export default {
         data() {
             return {
+                activeTab: 0,
                 data: [],
-                isPaginated: false,
+                isPaginated: true,
                 isPaginationSimple: false,
                 paginationPosition: 'bottom',
                 defaultSortDirection: '',
                 sortIcon: 'arrow-up',
                 sortIconSize: 'is-small',
                 currentPage: 1,
-                perPage: 5,
+                perPage: 10,
+                total: 0,
                 loading: false,
-                loadingRemove: false,
-                showModalNew: false,
                 showConfirmationRemove: false,
-                idSelected: null,
-                isUpdate: false,
-                attributes: [],
+                idSelected: '',
                 attributesStore: [
                     {
                         name: 'name',
@@ -155,27 +160,6 @@
                         loading: true
                     }
                 ],
-                attributesUpdate: [
-                    {
-                        name: 'id',
-                        placeholder: "ID",
-                        value: '',
-                        disabled: true
-                    },
-                    {
-                        name: 'name',
-                        placeholder: "Nombre",
-                        value: ''
-                    },
-                    {
-                        name: 'email',
-                        placeholder: "Correo"
-                    },
-                    {
-                        name: 'identification',
-                        placeholder: "Cedula"
-                    }
-                ],
                 positions: []
             }
         },
@@ -183,7 +167,6 @@
             getPositions() {
                 axios.get(`api/positions`)
                     .then(res => {
-                        console.log(res)
                         this.attributesStore.forEach(function(attribute){
                             if(attribute.name == 'position_id') {
                                 attribute.loading = false
@@ -199,10 +182,12 @@
             },
             getData() {
                 this.loading = true
-                axios.get(`api/persons?limit=${this.perPage}`)
+                axios.get(`api/persons?limit=${this.perPage}&page=${this.currentPage}`)
                     .then(res => {
                         this.loading = false
                         this.data = res.data.data
+                        this.total = res.data.total
+                        this.currentPage = res.data.current_page
                     })
                     .catch(() => {
                         this.loading = false
@@ -218,6 +203,12 @@
                 axios.delete(`api/persons/${id}`)
                     .then(res => {
                         this.loading = false
+                        this.$buefy.toast.open({
+                            duration: 5000,
+                            position: 'is-bottom',
+                            message: 'Se ha eliminado el usuario correctamente!',
+                            type: 'is-success'
+                        })
                         this.getData()
                     })
                     .catch(() => {
@@ -230,34 +221,35 @@
                 if(confirmed)
                     this.remove(this.idSelected)
             },
-            refresh() {
-                this.showModalNew = false
+            refresh(message) {
+                this.activeTab = 0
+                this.$buefy.toast.open({
+                    duration: 5000,
+                    position: 'is-bottom',
+                    message: message,
+                    type: 'is-success'
+                })
                 this.getData()
             },
             newPosition() {
-                this.showModalNew = true
-                this.isUpdate = false
-                this.attributes = this.attributesStore.slice(0)
+                this.activeTab = 1
             },
             editPosition(position) {
-                this.showModalNew = true
-                this.isUpdate = true
-                this.attributes = this.attributesUpdate.slice(0)
-                this.attributes.forEach(function(attribute) {
-                    attribute.value = position[attribute.name]
-                })
-            },
-            myPosition(id) {
-                var position = this.positions.filter(function(position) {
-                    return position.id = id
-                })
-
-                return position[0].name
+                this.idSelected = position.id
+                this.activeTab = 2
             }
         },
         mounted() {
             this.getData()
             this.getPositions() 
+        },
+        watch: {
+            currentPage: function() {
+                this.getData()
+            },
+            perPage: function() {
+                this.getData()
+            }
         }
     }
 </script>

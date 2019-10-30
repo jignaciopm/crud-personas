@@ -29,6 +29,7 @@ Vue.component('positions-component', require('./components/PositionComponent.vue
 Vue.component('persons-component', require('./components/PersonComponent.vue').default);
 Vue.component('confirmation-component', require('./components/ConfirmationComponent.vue').default);
 Vue.component('store-component', require('./components/StoreComponent.vue').default);
+Vue.component('update-component', require('./components/UpdateComponent.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
