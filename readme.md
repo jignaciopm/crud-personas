@@ -41,3 +41,5 @@ Posteriormente utilice el archivo `.env.example` para generar su propio `.env` e
     DB_PASSWORD=
 ...
 ```
+
+Asegurese de ejecutar `php artisan key:generate` una vez creado su `.env` para poder utilizar la aplicacion Laravel
