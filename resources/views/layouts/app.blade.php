@@ -50,9 +50,13 @@
             </div>
         </nav>
 
-        <main class="py-4 full-height">
+        <main class="py-4 full-height" style="min-height: 100vh">
             @yield('content')
         </main>
+
+        <footer class="d-flex justify-content-center">
+            <h3 style="margin-bottom: 30px">Desarrollado por <strong>Jose Ignacio Palma</strong> - <a href="mailto:jignaciopm13@gmail.com">jignaciopm13@gmail.com</a></h3>
+        </footer>
     </div>
 </body>
 </html>

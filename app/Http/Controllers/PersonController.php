@@ -57,8 +57,8 @@ class PersonController extends Controller
             $rules = [
                 'name' => 'required|unique:people|alpha|max:100',
                 'email' => 'required|email',
-                'identification' => 'unique:people|max:6',
-                'position_id' => 'exists:positions,id'
+                'identification' => 'unique:people|size:6|nullable',
+                'position_id' => 'exists:positions,id|nullable'
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -131,12 +131,12 @@ class PersonController extends Controller
             }
 
             if($request->has('identification') && $person->identification != $request['identification']) {
-                $rules['identification'] = 'unique:people|max:6';
+                $rules['identification'] = 'unique:people|size:6|nullable';
                 $person->identification = $request['identification'];
             }
 
             if($request->has('position_id') && $person->position_id != $request['position_id']) {
-                $rules['position_id'] = 'exists:positions,id';
+                $rules['position_id'] = 'exists:positions,id|nullable';
                 $person->position_id = $request['position_id'];
             }
 
