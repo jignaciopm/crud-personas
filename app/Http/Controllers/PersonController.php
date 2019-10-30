@@ -57,7 +57,7 @@ class PersonController extends Controller
             $rules = [
                 'name' => 'required|unique:people|alpha|max:100',
                 'email' => 'required|email',
-                'identification' => 'unique:people|size:6|nullable',
+                'identification' => 'digits:6|unique:people|nullable',
                 'position_id' => 'exists:positions,id|nullable'
             ];
 
@@ -131,7 +131,7 @@ class PersonController extends Controller
             }
 
             if($request->has('identification') && $person->identification != $request['identification']) {
-                $rules['identification'] = 'unique:people|size:6|nullable';
+                $rules['identification'] = 'digits:6|unique:people|nullable';
                 $person->identification = $request['identification'];
             }
 
