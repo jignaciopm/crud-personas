@@ -17,7 +17,16 @@ Jose Ignacio Palma
 
 ### Versiones
 
-- **[npm] 6.9.0**
+- **php** 7.3.7
+- **composer** 1.9.0
+- **npm** 6.9.0
+- **mysql**  15.1 Distrib 10.3.16-MariaDB, for Win64 (AMD64)
+
+### Instrucciones
+
+Clone este repositorio en su ambiente local, posteriormente acceda a la carpeta destino y ejecute
+
+```composer install```
 
 We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
 
