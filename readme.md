@@ -28,3 +28,16 @@ Clone este repositorio en su ambiente local, posteriormente acceda a la carpeta 
 
 ```composer install```
 ```npm install```
+
+Posteriormente utilice el archivo `.env.example` para generar su propio `.env` en el cual colocara debe indicar la siguiente configuracion si utilizara la misma base de datos proporcionada en el resposotirio (`bd.sql`):
+
+```
+...
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=crud_personas
+    DB_USERNAME=root
+    DB_PASSWORD=
+...
+```
