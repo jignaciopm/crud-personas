@@ -17,7 +17,7 @@ class PersonController extends Controller
     {
         try {
             $limit = $request->get('limit') != null ? $request->get('limit') : 10;
-            $persons = Person::paginate($limit);
+            $persons = Person::with('position')->paginate($limit);
         } catch(\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
