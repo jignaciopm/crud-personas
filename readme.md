@@ -8,7 +8,7 @@
 
 ### Desarrollador
 
-Jose Ignacio Palma
+[Jose Ignacio Palma](mailto:jignaciopm13@gmail.com)
 
 ### Librerias Adicionales
 
