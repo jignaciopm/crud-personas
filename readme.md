@@ -29,7 +29,7 @@ Clone este repositorio en su ambiente local, posteriormente acceda a la carpeta 
 ```composer install```
 ```npm install```
 
-Posteriormente utilice el archivo `.env.example` para generar su propio `.env` en el cual colocara debe indicar la siguiente configuracion si utilizara la misma base de datos proporcionada en el resposotirio (`bd.sql`):
+Posteriormente utilice el archivo `.env.example` para generar su propio `.env` en el cual colocara debe indicar la siguiente configuracion si utilizara la misma base de datos proporcionada en el resposotirio (`crud_personas.sql`):
 
 ```
 ...
